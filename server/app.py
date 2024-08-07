@@ -47,7 +47,58 @@ class PlantByID(Resource):
         plant = Plant.query.filter_by(id=id).first().to_dict()
         return make_response(jsonify(plant), 200)
 
+    def patch(self, id):
+        plant = Plant.query.filter_by(id=id).first()
 
+        if plant:
+            try:
+                data = request.get_json()
+                for key, value in data.items():
+                    if key in ["is_in_stock"]:
+                        setattr(plant, key, value)
+                db.session.commit()
+                return plant.to_dict(), 202
+            except Exception as e:
+                print(e)
+                return {'Error': "Cannot patch"}, 400
+        return {'Error': "Plant not found"}, 404
+
+    def delete(self, id):
+        plant = Plant.query.filter_by(id=id).first()
+
+        if plant:
+            db.session.delete(plant)
+            db.session.commit()
+            return {}, 204
+        return {'Error': "Plant not found"}, 404
+    
+    #     def patch(self,id):
+    #     found_alliance = Alliance.query.filter(Alliance.id == id).first()
+    #     if found_alliance:
+    #         try:
+    #             data = request.get_json()
+    #             for key in data:
+    #                 if key == "date":
+    #                     setattr(found_alliance, key, datetime.datetime.strptime(data[key], '%Y-%m-%d').date())
+    #                 else:
+    #                     setattr(found_alliance, key, data[key])
+    #             db.session.add(found_alliance)
+    #             db.session.commit()
+    #             return found_alliance.to_dict(),202
+    #         except Exception as e:
+    #             print(e)
+    #             return {'Error': "Cannot patch"},400
+    #     else:
+    #         return {"Error": f"Allance of id {id} does not exist"}
+    # def delete(self,id):
+    #     found_alliance = Alliance.query.filter(Alliance.id == id).first()
+    #     if found_alliance:
+    #         db.session.delete(found_alliance)
+    #         db.session.commit()
+    #         return {},204
+    #     else:
+    #         return {"Error": f"Allance of id {id} does not exist"}
+    
 api.add_resource(PlantByID, '/plants/<int:id>')
 
 
